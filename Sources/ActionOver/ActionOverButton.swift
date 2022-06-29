@@ -4,6 +4,7 @@
 //
 //  Created by Andrea Miotto on 19/4/20.
 //
+import SwiftUI
 
 /**
  The Action Over Button will be translated to an ActionSheetButton for the Action Sheet, or to a Button for the Popover menu.
@@ -18,11 +19,13 @@ public struct ActionOverButton {
         case destructive, cancel, normal
     }
     let title: String?
+    let image: Image?
     let type: ActionType
     let action: (() -> Void)?
 
-    public init(title: String?, type: ActionType, action: (() -> Void)?) {
+    public init(title: String?, image: Image? = nil, type: ActionType, action: (() -> Void)?) {
         self.title = title
+        self.image = image
         self.type = type
         self.action = action
     }

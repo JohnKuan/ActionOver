@@ -64,8 +64,8 @@ struct ActionOver: ViewModifier {
     }
 
     /// The **Popover Buttons** built from the Action Over Buttons
-    private var popoverButtons: [Button<Text>] {
-        var actionButtons: [Button<Text>] = []
+    private var popoverButtons: [Button<Label<Text, Image?>>] {
+        var actionButtons: [Button<Label<Text, Image?>>] = []
 
         // for each action over button
         // build an action sheet button
@@ -82,8 +82,12 @@ struct ActionOver: ViewModifier {
                         }
                 },
                     label: {
-                        Text(button.title ?? "")
-                            .foregroundColor(Color(self.normalButtonColor))
+                        Label.init(title: {
+                            Text(button.title ?? "")
+                                .foregroundColor(Color(self.normalButtonColor))
+                        }, icon: {
+                            button.image
+                        })
                 })
                 actionButtons.append(button)
             case .destructive:
@@ -95,8 +99,12 @@ struct ActionOver: ViewModifier {
                         }
                 },
                     label: {
-                        Text(button.title ?? "")
-                            .foregroundColor(Color(UIColor.systemRed))
+                        Label.init(title: {
+                            Text(button.title ?? "")
+                                .foregroundColor(Color(UIColor.systemRed))
+                        }, icon: {
+                            button.image
+                        })
                 })
 
                 actionButtons.append(button)
