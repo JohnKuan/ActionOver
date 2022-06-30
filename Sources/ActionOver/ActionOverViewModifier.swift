@@ -28,8 +28,6 @@ struct ActionOver: ViewModifier {
     /// The normal action button color
     let normalButtonColor: UIColor
 
-
-
     // MARK: - Private Properties
 
     /// The **Action Sheet Buttons** built from the Action Over Buttons
@@ -66,7 +64,6 @@ struct ActionOver: ViewModifier {
     /// The **Popover Buttons** built from the Action Over Buttons
     private var popoverButtons: [Button<Label<Text, Image?>>] {
         var actionButtons: [Button<Label<Text, Image?>>] = []
-
         // for each action over button
         // build an action sheet button
         for button in buttons {
@@ -74,13 +71,13 @@ struct ActionOver: ViewModifier {
             case .cancel:
                 break
             case .normal:
-                let button = Button(
+                let button: Button<Label<Text, Image?>> = Button(
                     action: {
                         self.presented = false
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                             button.action?()
                         }
-                },
+                    },
                     label: {
                         Label.init(title: {
                             Text(button.title ?? "")
@@ -88,7 +85,7 @@ struct ActionOver: ViewModifier {
                         }, icon: {
                             button.image
                         })
-                })
+                    })
                 actionButtons.append(button)
             case .destructive:
                 let button = Button(
@@ -106,7 +103,6 @@ struct ActionOver: ViewModifier {
                             button.image
                         })
                 })
-
                 actionButtons.append(button)
             }
         }
@@ -160,12 +156,54 @@ struct ActionOver: ViewModifier {
             ForEach((0..<self.popoverButtons.count), id: \.self) { index in
                 Group {
                     Divider()
-                    self.popoverButtons[index]
+                    let button = self.popoverButtons[index]
                         .padding(.all, 10)
+                        .contentShape(Rectangle())
+                    switch self.buttons[index].alignment {
+                    case .leading:
+                        button.labelStyle(LeadingAlignedLabelStyle())
+                    case .center:
+                        button.labelStyle(CenterAlignedLabelStyle())
+                    case .trailing:
+                        button.labelStyle(TrailingAlignedLabelStyle())
+                    }
                 }
             }
         }
-        .buttonStyle(PlainButtonStyle())
         .padding(10)
     }
 }
+
+struct LeadingAlignedLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(alignment: .center, spacing: 8, content: {
+            configuration.icon
+                .frame(width: 25, height: 25, alignment: .leading)
+            configuration.title
+                .frame(maxWidth: .infinity, alignment: .leading)
+        })
+    }
+}
+
+struct TrailingAlignedLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(alignment: .center, spacing: 8, content: {
+            configuration.icon
+                .frame(width: 25, height: 25, alignment: .trailing)
+            configuration.title
+                .frame(maxWidth: .infinity, alignment: .trailing)
+        })
+    }
+}
+
+struct CenterAlignedLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(alignment: .center, spacing: 8, content: {
+            configuration.icon
+                .frame(width: 25, height: 25, alignment: .trailing)
+            configuration.title
+                .frame(alignment: .leading)
+        })
+    }
+}
+
