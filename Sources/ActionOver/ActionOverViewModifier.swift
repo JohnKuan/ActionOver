@@ -133,7 +133,7 @@ struct ActionOver: ViewModifier {
                             message: self.message,
                             buttons: buttons,
                             normalButtonColor: normalButtonColor,
-                            popoverAlignment: .leading
+                            popoverAlignment: ipadAndMacConfiguration.alignment
                         )
                     }
                 )
@@ -207,15 +207,15 @@ struct ActionOverPopoverView: View {
                 .font(.headline)
                 .foregroundColor(Color(UIColor.secondaryLabel))
                 .padding(.top)
+                .padding(.horizontal, 10)
                 .multilineTextAlignment(titleAndSubtitleTextAlignment)
-            if self.message != nil {
-                Text(self.message ?? "")
-                    .font(.body)
+            if let message = self.message {
+                Text(message)
+                    .font(.subheadline)
                     .foregroundColor(Color(UIColor.secondaryLabel))
-                    .frame(maxWidth: UIScreen.main.bounds.size.width/3, minHeight: 60)
                     .lineLimit(5)
                     .multilineTextAlignment(titleAndSubtitleTextAlignment)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 10)
             }
 
             ForEach((0..<self.popoverButtons.count), id: \.self) { index in
@@ -227,6 +227,7 @@ struct ActionOverPopoverView: View {
                 }
             }
         }
+        .frame(idealWidth: UIScreen.main.bounds.size.width/3, maxWidth: UIScreen.main.bounds.size.width/2)
         .padding(10)
     }
 
@@ -248,7 +249,7 @@ struct ActionOverPopoverView: View {
                         }
                     },
                     label: {
-                        Label.init(title: {
+                        Label(title: {
                             Text(button.title ?? "")
                                 .foregroundColor(Color(self.normalButtonColor))
                         }, icon: {
@@ -265,7 +266,7 @@ struct ActionOverPopoverView: View {
                         }
                     },
                     label: {
-                        Label.init(title: {
+                        Label(title: {
                             Text(button.title ?? "")
                                 .foregroundColor(Color(UIColor.systemRed))
                         }, icon: {
