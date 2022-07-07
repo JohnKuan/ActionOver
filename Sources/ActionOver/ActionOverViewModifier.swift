@@ -255,7 +255,6 @@ struct ActionOverPopoverView: View {
                             button.image
                         })
                     })
-                    .contentShape(Rectangle())
                 actionButtons.append(button)
             case .destructive:
                 let button = Button(
@@ -277,12 +276,5 @@ struct ActionOverPopoverView: View {
             }
         }
         return actionButtons
-    }
-}
-
-struct ButtonWithImage: View {
-
-    var body: some View {
-
     }
 }
