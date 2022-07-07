@@ -19,26 +19,19 @@ public struct ActionOverButton {
         case destructive, cancel, normal
     }
 
-    public enum Alignment {
-        case leading, center, trailing
-    }
-
     let title: String?
     let image: Image?
     let type: ActionType
     let action: (() -> Void)?
-    let alignment: Alignment
 
     public init(title: String?,
                 image: Image? = nil,
                 type: ActionType,
-                alignment: Alignment = .center,
                 action: (() -> Void)?
     ) {
         self.title = title
         self.image = image
         self.type = type
-        self.alignment = alignment
         self.action = action
     }
 }

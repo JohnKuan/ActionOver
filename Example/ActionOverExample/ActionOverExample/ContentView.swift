@@ -32,7 +32,7 @@ struct ContentView: View {
                     .actionOver(
                         presented: $presented,
                         title: "Settings",
-                        message: "Which setting will you enable?",
+                        message: "Which setting will you enable? Which setting will you enable? Which setting will you enable?\nWhich setting will you enable?\nWhich setting will you enable?",
                         buttons: buttons,
                         ipadAndMacConfiguration: ipadMacConfig
                 )
@@ -56,6 +56,7 @@ struct ContentView: View {
             ),
             ActionOverButton(
                 title: "Option two",
+                image: Image(systemName: "book"),
                 type: .normal,
                 action: {}
             ),
@@ -73,7 +74,7 @@ struct ContentView: View {
     }()
 
     private var ipadMacConfig = {
-        IpadAndMacConfiguration(anchor: nil, arrowEdge: nil)
+        IpadAndMacConfiguration(anchor: nil, arrowEdge: nil, alignment: .leading)
     }()
 }
 

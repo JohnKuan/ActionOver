@@ -114,96 +114,175 @@ struct ActionOver: ViewModifier {
     func body(content: Content) -> some View {
         content
             .iPhone {
-                $0
-                    .actionSheet(isPresented: $presented) {
-                        ActionSheet(
-                            title: Text(self.title),
-                            message: Text(self.message ?? ""),
-                            buttons: sheetButtons)
+                $0.actionSheet(isPresented: $presented) {
+                    ActionSheet(
+                        title: Text(self.title),
+                        message: self.message != nil ? Text(self.message ?? "") : nil,
+                        buttons: sheetButtons)
                 }
-        }
-        .iPadAndMac {
-            return ipadAndMacConfiguration.anchor != nil ?
+            }
+            .iPadAndMac {
                 $0.popover(
                     isPresented: $presented,
                     attachmentAnchor: PopoverAttachmentAnchor.point(ipadAndMacConfiguration.anchor ?? .topTrailing),
                     arrowEdge: (ipadAndMacConfiguration.arrowEdge ?? .top),
-                    content: popContent
+                    content: {
+                        ActionOverPopoverView(
+                            presented: $presented,
+                            title: self.title,
+                            message: self.message,
+                            buttons: buttons,
+                            normalButtonColor: normalButtonColor,
+                            popoverAlignment: .leading
+                        )
+                    }
                 )
-                :
-                $0.popover(isPresented: $presented, content: popContent)
+            }
+    }
+}
+
+/**
+ Creates an **Action Over Popover**. It will be a **Popover** on *iPad and Mac*.
+
+ It defines the:
+ - **title**: The title of the Action Over.
+ - **message**: The message of the action Over.
+ - **buttons** An array of ActionOverButton that will be rendered in the proper format according the displayed menu type.
+ - **popoverAlignment**: The alignment that helpd the menu to position itself on iPad and Mac
+ */
+struct ActionOverPopoverView: View {
+
+    // MARK: - Public Properties
+
+    /// Set to true when you want to display the **ActionOver view**
+    var presented: Binding<Bool>
+
+    /// The **title** of the *Action Over*
+    let title: String
+
+    /// The **message** of the *Action Over*
+    let message: String?
+
+    /// All the **buttons** that will be displayed inside the *Action Over*
+    let buttons: [ActionOverButton]
+
+    /// The normal action button color
+    let normalButtonColor: UIColor
+
+    /// The stack alignment
+    let stackAlignment: HorizontalAlignment
+
+    /// The title and message text alignment
+    let titleAndSubtitleTextAlignment: TextAlignment
+
+    init(
+        presented: Binding<Bool>,
+        title: String,
+        message: String?,
+        buttons: [ActionOverButton],
+        normalButtonColor: UIColor,
+        popoverAlignment: IpadAndMacConfiguration.Alignment = .center
+    ) {
+        self.presented = presented
+        self.title = title
+        self.message = message
+        self.buttons = buttons
+        self.normalButtonColor = normalButtonColor
+        switch popoverAlignment {
+        case .center:
+            self.stackAlignment = .center
+            self.titleAndSubtitleTextAlignment = .center
+        case .leading:
+            self.stackAlignment = .leading
+            self.titleAndSubtitleTextAlignment = .leading
+        case .trailing:
+            self.stackAlignment = .trailing
+            self.titleAndSubtitleTextAlignment = .trailing
         }
     }
 
-    // MARK: - Private Methods
-
-    private func popContent() -> some View {
-        return VStack(alignment: .center, spacing: 10) {
+    var body: some View {
+        VStack(alignment: stackAlignment, spacing: 10) {
             Text(self.title)
                 .font(.headline)
                 .foregroundColor(Color(UIColor.secondaryLabel))
                 .padding(.top)
+                .multilineTextAlignment(titleAndSubtitleTextAlignment)
             if self.message != nil {
                 Text(self.message ?? "")
                     .font(.body)
                     .foregroundColor(Color(UIColor.secondaryLabel))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(4)
-                    .frame(minHeight: 60)
+                    .frame(maxWidth: UIScreen.main.bounds.size.width/3, minHeight: 60)
+                    .lineLimit(5)
+                    .multilineTextAlignment(titleAndSubtitleTextAlignment)
                     .padding(.horizontal)
             }
 
             ForEach((0..<self.popoverButtons.count), id: \.self) { index in
                 Group {
                     Divider()
-                    let button = self.popoverButtons[index]
+                    self.popoverButtons[index]
                         .padding(.all, 10)
                         .contentShape(Rectangle())
-                    switch self.buttons[index].alignment {
-                    case .leading:
-                        button.labelStyle(LeadingAlignedLabelStyle())
-                    case .center:
-                        button.labelStyle(CenterAlignedLabelStyle())
-                    case .trailing:
-                        button.labelStyle(TrailingAlignedLabelStyle())
-                    }
                 }
             }
         }
         .padding(10)
     }
-}
 
-struct LeadingAlignedLabelStyle: LabelStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        HStack(alignment: .center, spacing: 8, content: {
-            configuration.icon
-                .frame(width: 25, height: 25, alignment: .leading)
-            configuration.title
-                .frame(maxWidth: .infinity, alignment: .leading)
-        })
+    /// The **Popover Buttons** built from the Action Over Buttons
+    private var popoverButtons: [Button<Label<Text, Image?>>] {
+        var actionButtons: [Button<Label<Text, Image?>>] = []
+        // for each action over button
+        // build an action sheet button
+        for button in buttons {
+            switch button.type {
+            case .cancel:
+                break
+            case .normal:
+                let button: Button<Label<Text, Image?>> = Button(
+                    action: {
+                        self.presented.wrappedValue = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            button.action?()
+                        }
+                    },
+                    label: {
+                        Label.init(title: {
+                            Text(button.title ?? "")
+                                .foregroundColor(Color(self.normalButtonColor))
+                        }, icon: {
+                            button.image
+                        })
+                    })
+                    .contentShape(Rectangle())
+                actionButtons.append(button)
+            case .destructive:
+                let button = Button(
+                    action: {
+                        self.presented.wrappedValue = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            button.action?()
+                        }
+                    },
+                    label: {
+                        Label.init(title: {
+                            Text(button.title ?? "")
+                                .foregroundColor(Color(UIColor.systemRed))
+                        }, icon: {
+                            button.image
+                        })
+                    })
+                actionButtons.append(button)
+            }
+        }
+        return actionButtons
     }
 }
 
-struct TrailingAlignedLabelStyle: LabelStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        HStack(alignment: .center, spacing: 8, content: {
-            configuration.icon
-                .frame(width: 25, height: 25, alignment: .trailing)
-            configuration.title
-                .frame(maxWidth: .infinity, alignment: .trailing)
-        })
+struct ButtonWithImage: View {
+
+    var body: some View {
+
     }
 }
-
-struct CenterAlignedLabelStyle: LabelStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        HStack(alignment: .center, spacing: 8, content: {
-            configuration.icon
-                .frame(width: 25, height: 25, alignment: .trailing)
-            configuration.title
-                .frame(alignment: .leading)
-        })
-    }
-}
-

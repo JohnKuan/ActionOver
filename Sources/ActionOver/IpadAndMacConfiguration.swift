@@ -23,8 +23,16 @@ public struct IpadAndMacConfiguration {
     /// The **Arrow Edge** for the the *ActionOver* in **iPad and Mac devices**
     let arrowEdge: Edge?
 
-    public init(anchor: UnitPoint?, arrowEdge: Edge?) {
+    /// The alignment for the popover content
+    public enum Alignment {
+        case leading, center, trailing
+    }
+
+    let alignment: Alignment
+
+    public init(anchor: UnitPoint?, arrowEdge: Edge?, alignment: Alignment = .center) {
         self.anchor = anchor
         self.arrowEdge = arrowEdge
+        self.alignment = alignment
     }
 }
